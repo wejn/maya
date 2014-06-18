@@ -6,8 +6,6 @@ you can think of it as more powerful sister of
 # Installation
 Add `wejn-maya.jar` to Wowza's `lib/` directory.
 
-Add `wejn-maya.jar` to Wowza's `lib/` directory.
-
 Add following to appropriate HTTPProviders section of your VHost.xml
 (make sure you're adding before all `HTTPProvider`s with
 `RequestFilters` set to `*`):
