@@ -41,6 +41,7 @@
 	<!-- / buildname -->
 
 	<target name="compile" depends="buildname">
+		<mkdir dir="${build.dir}" />
 		<javac srcdir="${src.dir}" debug="true" destdir="${build.dir}" includeantruntime="false">
 			<classpath>
 				<fileset dir="${linux.wowza.lib.dir}">
