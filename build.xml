@@ -1,0 +1,121 @@
+<?xml version="1.0"?>
+<project name="maya" default="all">
+	<property environment="env"/>
+
+	<target name="all" depends="jar,doc,release" />
+	
+	<property name="linux.wowza.lib.dir" value="/home/wejn/bin/WowzaMediaServer/lib"/>
+	
+	<property name="output.filename_base" value="wejn-maya" />
+
+	<property name="src.dir" location="src"/>
+	<property name="build.dir" location="build"/>
+
+	<!-- figure out buildname based on whether in Git or SVN -->
+
+	<available file=".svn/entries" property="scm.svn.present" />
+	<available file=".git/HEAD" property="scm.git.present" />
+
+	<target name="buildname.svn" if="scm.svn.present">
+		<exec executable="svnversion" outputproperty="scm.buildversion" />
+	</target>
+	<target name="buildname.git" if="scm.git.present">
+		<exec executable="git" outputproperty="scm.buildversion">
+			<arg value="rev-parse" />
+			<arg value="--short" />
+			<arg value="HEAD" />
+		</exec>
+	</target>
+	<target name="buildname.default">
+		<property name="scm.buildversion" value="unversioned"/>
+	</target>
+
+	<property name="jar.filename_ex_version" value="${output.filename_base}.jar"/>
+
+	<target name="buildname" depends="buildname.git,buildname.svn,buildname.default">
+		<property name="jar.filename" value="${output.filename_base}-${scm.buildversion}.jar"/>
+		<property name="doc.filename" value="${output.filename_base}-${scm.buildversion}-docs.zip"/>
+		<property name="release.filename" value="${output.filename_base}-${scm.buildversion}-release.zip"/>
+	</target>
+
+	<!-- / buildname -->
+
+	<target name="compile" depends="buildname">
+		<javac srcdir="${src.dir}" debug="true" destdir="${build.dir}" includeantruntime="false">
+			<classpath>
+				<fileset dir="${linux.wowza.lib.dir}">
+					<include name="*.jar" />
+				</fileset>
+				<fileset dir="lib" erroronmissingdir="false">
+					<include name="*.jar" />
+				</fileset>
+			</classpath>
+			<compilerarg value="-Xlint:unchecked"/>
+		</javac>
+	</target>
+
+	<target name="jar" depends="compile">
+		<jar jarfile="${jar.filename}">
+			<fileset dir="${build.dir}">
+			</fileset>
+		</jar>
+		<exec executable="ln">
+			<arg value="-sf" />
+			<arg value="${jar.filename}" />
+			<arg value="${jar.filename_ex_version}" />
+		</exec>
+	</target>
+
+	<target name="doc" depends="buildname">
+		<apply executable="spec.rb" dest=".">
+			<srcfile/>
+			<targetfile/>
+			<fileset dir="." includes="*.txt"/>
+			<mapper type="glob" from="*.txt" to="*.html" />
+		</apply>
+		<zip destfile="${doc.filename}" basedir="." includes="*.html,*.pdf" />
+	</target>
+
+	<target name="release" depends="jar,doc">
+		<zip destfile="${release.filename}">
+			<zipfileset dir="." includes="${jar.filename}" />
+			<zipfileset dir="." includes="*.html" prefix="docs" />
+			<zipfileset dir="." includes="*.pdf" prefix="docs" />
+			<zipfileset dir="lib" includes="*.jar" prefix="lib" erroronmissingdir="false" />
+		</zip>
+	</target>
+
+	<target name="clean">
+		<apply executable="rm" force="true" addsourcefile="false">
+			<arg value="-f" />
+			<targetfile/>
+			<fileset dir="." includes="*.txt"/>
+			<mapper type="glob" from="*.txt" to="*.html" />
+		</apply>
+		<exec executable="sh">
+			<arg value="-c" />
+			<arg value="rm -f *.jar *.zip" />
+		</exec>
+	</target>
+
+	<target name="distclean" depends="clean">
+		<exec executable="sh">
+			<arg value="-c" />
+			<arg value="rm -rf ${build.dir}/com ${build.dir}/cz" />
+		</exec>
+	</target>
+
+	<target name="watch">
+		<exec executable="onfilechange">
+			<arg value="src/**/*" />
+			<arg value="ant &amp;&amp; wowza.sh restart" />
+		</exec>
+	</target>
+
+	<target name="docwatch">
+		<exec executable="onfilechange">
+			<arg value="*.txt" />
+			<arg value="ant doc &amp;&amp; cp *.html ~/download/" />
+		</exec>
+	</target>
+</project>
