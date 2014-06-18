@@ -50,7 +50,7 @@ username/password pairs) to your
 Restart Wowza to finish installation.
 
 # ... for the rest of the documentation ...
-Please see [the auto-generated documentation on my site]<http://wejn.com/downloads/readme-maya.html> or the plain `readme-maya.txt` in this repo.
+Please see [the auto-generated documentation on my site](http://wejn.com/downloads/readme-maya.html) or the plain `readme-maya.txt` in this repo.
 
 I'm not exactly fanboy of Markdown and don't feel like converting eveything
 by hand.
